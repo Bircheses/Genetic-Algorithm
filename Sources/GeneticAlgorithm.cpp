@@ -97,21 +97,6 @@ double_tour GeneticAlgorithm::PMX(int *tour1, int *tour2, int size, int i, int j
     return dt;
 }
 
-int * GeneticAlgorithm::copy(const int *tour, int size) {
-    int* temp = new int[size];
-    for(int i=0; i<size; i++) temp[i] = tour[i];
-    return temp;
-}
-
-int GeneticAlgorithm::calculate_cost(int **matrix, int *tour, int size) {
-    int totalCost = 0;
-    for (int i = 0; i < size-1; ++i) {
-        totalCost += matrix[tour[i]][tour[i+1]];
-    }
-    totalCost += matrix[tour[size-1]][tour[0]];
-    return totalCost;
-}
-
 void GeneticAlgorithm::swap(int *tour, int i, int j) {
     std::swap(tour[i], tour[j]);
 }
@@ -144,6 +129,21 @@ void GeneticAlgorithm::inverse(int *tour, int i, int j) {
             ++j;
         }
     }
+}
+
+int * GeneticAlgorithm::copy(const int *tour, int size) {
+    int* temp = new int[size];
+    for(int i=0; i<size; i++) temp[i] = tour[i];
+    return temp;
+}
+
+int GeneticAlgorithm::calculate_cost(int **matrix, int *tour, int size) {
+    int totalCost = 0;
+    for (int i = 0; i < size-1; ++i) {
+        totalCost += matrix[tour[i]][tour[i+1]];
+    }
+    totalCost += matrix[tour[size-1]][tour[0]];
+    return totalCost;
 }
 
 int * GeneticAlgorithm::generate_random_tour(int size) {

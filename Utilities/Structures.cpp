@@ -6,7 +6,7 @@ struct return_values {
     double final_temp;
 };
 
-
+#pragma once
 struct double_tour {
     int * tour1;
     int * tour2;
