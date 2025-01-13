@@ -9,7 +9,7 @@ int main() {
     int tab2[9] = {4,5,2,1,8,7,6,9,3};
 
     GeneticAlgorithm GA;
-    auto [f, s] = GA.PMX(tab1, tab2, 9, 3, 7);
+    auto [f, s] = GA.OX(tab1, tab2, 9, 3, 7);
 
     /*show_tour(f, 10);
     show_tour(s, 10);*/

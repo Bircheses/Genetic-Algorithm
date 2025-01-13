@@ -27,6 +27,7 @@ public:
      */
     int simulated_annealing(double finalTemp, double alpha, double stop_time, int neighbour_strategy);
     double_tour PMX(int* tour1, int* tour2, int size, int i, int j);
+    double_tour OX(int* tour1, int* tour2, int size, int i, int j);
     ~GeneticAlgorithm();
 };
 

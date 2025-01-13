@@ -14,6 +14,38 @@ bool GeneticAlgorithm::find(int *tour, int begin, int end, int value) {
     return false;
 }
 
+double_tour GeneticAlgorithm::OX(int *tour1, int *tour2, int size, int i, int j) {
+    int* new_tour1 = new int[size];
+    int* new_tour2 = new int[size];
+
+    for(int i=0; i<size; i++) {
+        new_tour1[i] = -1;
+        new_tour2[i] = -1;
+    }
+
+    for(int k=i; k<j; k++) {
+        new_tour1[k] = tour2[k];
+        new_tour2[k] = tour1[k];
+    }
+
+    for(int k=0; k<size; k++) {
+        if(!find(tour1, i, j, tour2[k])) {
+            int l=0;
+            while(new_tour2[l]!=-1) l++;
+            new_tour2[l] = tour2[k];
+        }
+
+        if(!find(tour2, i, j, tour1[k])) {
+            int l=0;
+            while(new_tour1[l]!=-1) l++;
+            new_tour1[l] = tour1[k];
+        }
+    }
+
+    double_tour dt{new_tour1, new_tour2};
+    return dt;
+}
+
 double_tour GeneticAlgorithm::PMX(int *tour1, int *tour2, int size, int i, int j) {
     int* new_tour1 = new int[size];
     int* new_tour2 = new int[size];
