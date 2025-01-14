@@ -96,6 +96,18 @@ double_tour GeneticAlgorithm::PMX(int *tour1, int *tour2, int size, int i, int j
     return dt;
 }
 
+int GeneticAlgorithm::tournament_selection(int **tour_array, int tournament_size, int population_size) {
+    int bestCost = INT_MAX, bestIndex=0;
+    for(int i=0; i<tournament_size; i++){
+        int index = rand() % population_size;
+        int cost = calculate_cost(matrix, tour_array[index], size);
+        if(cost < bestCost){
+            bestIndex = index;
+        }
+    }
+    return bestIndex;
+}
+
 void GeneticAlgorithm::swap(int *tour, int i, int j) {
     std::swap(tour[i], tour[j]);
 }
@@ -157,7 +169,7 @@ int * GeneticAlgorithm::generate_random_tour(int size) {
     return a;
 }
 
-int GeneticAlgorithm::genetic_algorithm(double stop_time, int mutation_strategy, int crossing_strategy, int population_size, double wsp_mut, double wsp_cros) {
+int GeneticAlgorithm::genetic_algorithm(double stop_time, int mutation_strategy, int crossing_strategy, int population_size, double wsp_mut, double wsp_cros, int tournament_size) {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);// CLOCK_MONOTONIC gwarantuje stały wzrost czasu
     srand(ts.tv_nsec ^ ts.tv_sec);
@@ -174,16 +186,44 @@ int GeneticAlgorithm::genetic_algorithm(double stop_time, int mutation_strategy,
     }
 
     while(counter.getElapsedTime() < stop_time){
-        int i = rand() % size;
-        int j = rand() % size;
-        while (i == j) j = rand() % size;
+        for(int i=0; i<population_size; i++) {
+            int begin = rand() % size;
+            int end = rand() % size;
+            while (begin == end) end = rand() % size;
 
-        if(wsp_cros > (rand() / (double)RAND_MAX)){
+            //Generowanie dwóch indexów dróg wybranych przez selekcję turniejową
+            int index1 = tournament_selection(tour_array, tournament_size, population_size);
+            int index2 = tournament_selection(tour_array, tournament_size, population_size);
 
-        }
+            if (wsp_cros > (rand() / (double) RAND_MAX)) {
+                switch (crossing_strategy) {
+                    //PMX
+                    case 0: {
+                        auto [f, s] = PMX(tour_array[index1], tour_array[index2], size, begin, end);
+                        break;
+                    }
+                    //OX
+                    case 1: {
+                        auto [f, s] = OX(tour_array[index1], tour_array[index2], size, begin, end);
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
 
-        if(wsp_mut > (rand() / (double)RAND_MAX)){
-
+            if (wsp_mut > (rand() / (double) RAND_MAX)) {
+                switch (mutation_strategy) {
+                    //Swap
+                    case 0:
+                        break;
+                    //Insert
+                    case 1:
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
     }
 
