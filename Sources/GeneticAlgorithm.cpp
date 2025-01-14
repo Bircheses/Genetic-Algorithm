@@ -1,8 +1,12 @@
 #include "../Headers/GeneticAlgorithm.h"
+
+#include <algorithm>
+
 #include "../Headers/Counter.h"
 #include "../Utilities/StaticFunctions.cpp"
 #include <ctime>
 #include <cmath>
+#include <random>
 
 
 bool GeneticAlgorithm::find(int *&tour, int begin, int end, int value) {
@@ -170,7 +174,7 @@ int * GeneticAlgorithm::generate_random_tour(int size) {
     return a;
 }
 
-int GeneticAlgorithm::genetic_algorithm(double stop_time, int mutation_strategy, int crossing_strategy, int population_size, double wsp_mut, double wsp_cros, int tournament_size) {
+int GeneticAlgorithm::genetic_algorithm(double stop_time, int mutation_strategy, int crossing_strategy, int population_size, double wsp_mut, double wsp_cros, int tournament_size, double new_gen_intake) {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);// CLOCK_MONOTONIC gwarantuje stały wzrost czasu
     srand(ts.tv_nsec ^ ts.tv_sec);
@@ -182,24 +186,32 @@ int GeneticAlgorithm::genetic_algorithm(double stop_time, int mutation_strategy,
 
     double time_found = 0;
     int ** old_gen = new int*[population_size];
-    int ** new_gen = new int*[population_size];
     for(int i=0; i<population_size; i++){
         old_gen[i] = generate_random_tour(size);
     }
 
+    int ** new_gen = new int*[population_size];
+
     while(counter.getElapsedTime() < stop_time){
-        for(int i=0; i<population_size; i++) {
+        for(int i=0; i<population_size; i+=2) {
             int begin = rand() % size;
             int end = rand() % size;
             while (begin == end) end = rand() % size;
 
-            //Generowanie dwóch indexów dróg wybranych przez selekcję turniejową
+            if(begin > end) {
+                int temp = end;
+                end = begin;
+                begin = temp;
+            }
+
+            //Generating two random parent indexes using tournament selection
             int index1 = tournament_selection(old_gen, tournament_size, population_size);
             int index2 = tournament_selection(old_gen, tournament_size, population_size);
 
             int* tour1 = copy(old_gen[index1], size);
             int* tour2 = copy(old_gen[index2], size);
 
+            //Crossing strategy with a propability given by user
             if (wsp_cros > (rand() / (double) RAND_MAX)) {
                 switch (crossing_strategy) {
                     //PMX
@@ -217,6 +229,7 @@ int GeneticAlgorithm::genetic_algorithm(double stop_time, int mutation_strategy,
                 }
             }
 
+            //Mutation strategy with a propability given by user
             if (wsp_mut > (rand() / (double) RAND_MAX)) {
                 switch (mutation_strategy) {
                     //Swap
@@ -236,18 +249,62 @@ int GeneticAlgorithm::genetic_algorithm(double stop_time, int mutation_strategy,
                 }
             }
 
-
+            //Filling new_gen with acquired tours
+            new_gen[i] = tour1;
+            new_gen[i+1] = tour2;
         }
+
+        //Sorting the old_gen to take only best (1-new_gen_intake) of old_gen to new_gen
+        sort(old_gen, old_gen + population_size, [&](int* first, int* second) -> bool {
+            return calculate_cost(matrix, first, size) < calculate_cost(matrix, second, size);
+        });
+
+        //Save the best cost of old_gen
+        int tempCost = calculate_cost(matrix, old_gen[0], size);
+        if(tempCost < bestCost) {
+            bestCost = tempCost;
+        }
+
+        //Randomly shuffle the new_gen so we take random new_gen_intake of new_gen
+        shuffle(new_gen, new_gen + population_size, std::mt19937(std::random_device()()));
+
+        int last_index = static_cast<int>(new_gen_intake * population_size);
+
+        for(int i=0, j=last_index; j<population_size; i++, j++) {
+            delete new_gen[j];
+            new_gen[j] = copy(old_gen[i], size);
+        }
+
+        //New generation becomes old generation
+        //Prepare the space by deleting the old generation
+        for(int i=0; i<population_size; i++){
+            delete [] old_gen[i];
+        }
+        delete [] old_gen;
+
+        //Initialize old_gen again
+        old_gen = new int*[population_size];
+
+        //Copy values from new gen to old gen
+        for(int i=0; i<population_size; i++){
+            old_gen[i] = copy(new_gen[i], size);
+        }
+
+        //Delete new_gen after not needing it for anything more
+        for(int i=0; i<population_size; i++){
+            delete [] new_gen[i];
+        }
+        delete [] new_gen;
+
+        //Initialize new_gen again
+        new_gen = new int*[population_size];
     }
 
+    //Clean up the memory after the program
     for(int i=0; i<population_size; i++){
         delete [] old_gen[i];
     }
     delete [] old_gen;
-
-    for(int i=0; i<population_size; i++){
-        delete [] new_gen[i];
-    }
     delete [] new_gen;
 
     return 0;

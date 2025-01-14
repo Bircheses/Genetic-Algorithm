@@ -182,7 +182,13 @@ static void read_conf_file () {
     int size;
     int** matrix;
     double stop_time;
-    double alpha;
+    int crossing;
+    double wsp_crossing;
+    int mutation;
+    double wsp_mutation;
+    int population_size;
+    int tournament_size;
+    double new_gen_intake;
 
     std::ifstream file("config.txt");
     if (!file.is_open()) {
@@ -215,13 +221,57 @@ static void read_conf_file () {
             stop_time = argument * 1000; // Converting to milliseconds
         }
 
-        if (!line.find("wsp_zmiany:")) {
+        if (!line.find("crossing:")) {
+            istringstream iss(line);
+            string command = "";
+            string argument;
+            iss >> command >> argument >> wsp_crossing;
+
+            string arg1 = argument.substr(0, argument.find(';'));
+
+            if(arg1 == "PMX") {
+                crossing = 0;
+            }else crossing = 1;
+        }
+
+        if (!line.find("mutation:")) {
+            istringstream iss(line);
+            string command = "";
+            string argument;
+            iss >> command >> argument >> wsp_mutation;
+
+            string arg1 = argument.substr(0, argument.find(';'));
+
+            if(arg1 == "swap") {
+                mutation = 0;
+            }else mutation = 1;
+        }
+
+        if (!line.find("population:")) {
+            istringstream iss(line);
+            string command = "";
+            int argument;
+            iss >> command >> argument;
+
+            population_size = argument*size;
+        }
+
+        if (!line.find("tournament_size:")) {
+            istringstream iss(line);
+            string command = "";
+            int argument;
+            iss >> command >> argument;
+
+            tournament_size = argument;
+        }
+
+        if (!line.find("old_best_gen_intake:")) {
             istringstream iss(line);
             string command = "";
             double argument;
             iss >> command >> argument;
 
-            alpha = argument; // Change factor
+            new_gen_intake = 1 - argument;
         }
 
         if (!line.find("SA:")) {
