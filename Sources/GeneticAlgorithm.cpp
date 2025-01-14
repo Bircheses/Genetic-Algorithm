@@ -235,8 +235,6 @@ int GeneticAlgorithm::genetic_algorithm(double stop_time, int mutation_strategy,
                         break;
                 }
             }
-
-
         }
     }
 
