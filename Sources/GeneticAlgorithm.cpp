@@ -14,42 +14,38 @@ bool GeneticAlgorithm::find(int *tour, int begin, int end, int value) {
     return false;
 }
 
-void GeneticAlgorithm::OX(int *tour1, int *tour2, int size, int i, int j) {
+double_tour GeneticAlgorithm::OX(int *tour1, int *tour2, int size, int begin, int end) {
     int* new_tour1 = new int[size];
     int* new_tour2 = new int[size];
 
-    for(int i=0; i<size; i++) {
-        new_tour1[i] = -1;
-        new_tour2[i] = -1;
-    }
-
-    for(int k=i; k<j; k++) {
+    for(int k=begin; k<end; k++) {
         new_tour1[k] = tour2[k];
         new_tour2[k] = tour1[k];
     }
 
-    for(int k=0; k<size; k++) {
-        if(!find(tour1, i, j, tour2[k])) {
-            int l=0;
-            while(new_tour2[l]!=-1) l++;
-            new_tour2[l] = tour2[k];
+    int index1 = end % size;
+    int index2 = end % size;
+
+    for (int k = 0; k < size; k++) {
+        int current_val1 = tour1[(end + k) % size];
+        int current_val2 = tour2[(end + k) % size];
+
+        if (!find(new_tour1, begin, end, current_val2)) {
+            new_tour1[index1] = current_val2;
+            index1 = (index1 + 1) % size;
         }
 
-        if(!find(tour2, i, j, tour1[k])) {
-            int l=0;
-            while(new_tour1[l]!=-1) l++;
-            new_tour1[l] = tour1[k];
+        if (!find(new_tour2, begin, end, current_val1)) {
+            new_tour2[index2] = current_val1;
+            index2 = (index2 + 1) % size;
         }
     }
 
-    delete [] tour1;
-    delete [] tour2;
-
-    tour1 = new_tour1;
-    tour2 = new_tour2;
+    double_tour dt{new_tour1, new_tour2};
+    return dt;
 }
 
-void GeneticAlgorithm::PMX(int *tour1, int *tour2, int size, int i, int j) {
+double_tour GeneticAlgorithm::PMX(int *tour1, int *tour2, int size, int i, int j) {
     int* new_tour1 = new int[size];
     int* new_tour2 = new int[size];
 
@@ -96,11 +92,8 @@ void GeneticAlgorithm::PMX(int *tour1, int *tour2, int size, int i, int j) {
         }
     }
 
-    delete [] tour1;
-    delete [] tour2;
-
-    tour1 = new_tour1;
-    tour2 = new_tour2;
+    double_tour dt{new_tour1, new_tour2};
+    return dt;
 }
 
 void GeneticAlgorithm::swap(int *tour, int i, int j) {
