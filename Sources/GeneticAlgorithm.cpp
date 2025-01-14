@@ -14,7 +14,7 @@ bool GeneticAlgorithm::find(int *tour, int begin, int end, int value) {
     return false;
 }
 
-double_tour GeneticAlgorithm::OX(int *tour1, int *tour2, int size, int i, int j) {
+void GeneticAlgorithm::OX(int *tour1, int *tour2, int size, int i, int j) {
     int* new_tour1 = new int[size];
     int* new_tour2 = new int[size];
 
@@ -42,11 +42,14 @@ double_tour GeneticAlgorithm::OX(int *tour1, int *tour2, int size, int i, int j)
         }
     }
 
-    double_tour dt{new_tour1, new_tour2};
-    return dt;
+    delete [] tour1;
+    delete [] tour2;
+
+    tour1 = new_tour1;
+    tour2 = new_tour2;
 }
 
-double_tour GeneticAlgorithm::PMX(int *tour1, int *tour2, int size, int i, int j) {
+void GeneticAlgorithm::PMX(int *tour1, int *tour2, int size, int i, int j) {
     int* new_tour1 = new int[size];
     int* new_tour2 = new int[size];
 
@@ -93,8 +96,11 @@ double_tour GeneticAlgorithm::PMX(int *tour1, int *tour2, int size, int i, int j
         }
     }
 
-    double_tour dt{new_tour1, new_tour2};
-    return dt;
+    delete [] tour1;
+    delete [] tour2;
+
+    tour1 = new_tour1;
+    tour2 = new_tour2;
 }
 
 void GeneticAlgorithm::swap(int *tour, int i, int j) {
@@ -158,7 +164,41 @@ int * GeneticAlgorithm::generate_random_tour(int size) {
     return a;
 }
 
-int GeneticAlgorithm::simulated_annealing(double finalTemp, double alpha, double stop_time, int neighbour_strategy) {
+int GeneticAlgorithm::genetic_algorithm(double stop_time, int mutation_strategy, int crossing_strategy, int population_size, double wsp_mut, double wsp_cros) {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);// CLOCK_MONOTONIC gwarantuje stały wzrost czasu
+    srand(ts.tv_nsec ^ ts.tv_sec);
+
+    Counter counter;
+    counter.start();
+
+    int bestCost = INT32_MAX;
+
+    double time_found = 0;
+    int ** tour_array = new int*[population_size];
+    for(int i=0; i<population_size; i++){
+        tour_array[i] = generate_random_tour(size);
+    }
+
+    while(counter.getElapsedTime() < stop_time){
+        int i = rand() % size;
+        int j = rand() % size;
+        while (i == j) j = rand() % size;
+
+        if(wsp_cros > (rand() / (double)RAND_MAX)){
+
+        }
+
+        if(wsp_mut > (rand() / (double)RAND_MAX)){
+
+        }
+    }
+
+    for(int i=0; i<population_size; i++){
+        delete [] tour_array[i];
+    }
+    delete [] tour_array;
+
     return 0;
 }
 
