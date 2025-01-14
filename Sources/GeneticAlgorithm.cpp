@@ -5,7 +5,7 @@
 #include <cmath>
 
 
-bool GeneticAlgorithm::find(int *tour, int begin, int end, int value) {
+bool GeneticAlgorithm::find(int *&tour, int begin, int end, int value) {
     for(int i=begin; i<end; i++) {
         if(tour[i] == value) {
             return true;
@@ -14,7 +14,7 @@ bool GeneticAlgorithm::find(int *tour, int begin, int end, int value) {
     return false;
 }
 
-double_tour GeneticAlgorithm::OX(int *tour1, int *tour2, int size, int begin, int end) {
+void GeneticAlgorithm::OX(int *&tour1, int *&tour2, int begin, int end) const {
     int* new_tour1 = new int[size];
     int* new_tour2 = new int[size];
 
@@ -41,38 +41,36 @@ double_tour GeneticAlgorithm::OX(int *tour1, int *tour2, int size, int begin, in
         }
     }
 
-    double_tour dt{new_tour1, new_tour2};
-    return dt;
+    delete [] tour1;
+    delete [] tour2;
+
+    tour1 = new_tour1;
+    tour2 = new_tour2;
 }
 
-double_tour GeneticAlgorithm::PMX(int *tour1, int *tour2, int size, int i, int j) {
+void GeneticAlgorithm::PMX(int *&tour1, int *&tour2, int begin, int end) const {
     int* new_tour1 = new int[size];
     int* new_tour2 = new int[size];
 
-    for(int i=0; i<size; i++) {
-        new_tour1[i] = -1;
-        new_tour2[i] = -1;
-    }
-
-    for(int k=i; k<j; k++) {
+    for(int k=begin; k<end; k++) {
         new_tour1[k] = tour2[k];
         new_tour2[k] = tour1[k];
     }
 
     for(int k=0; k<size; k++) {
-        if(k>=i && k<j) continue;
+        if(k>=begin && k<end) continue;
 
-        if(!find(tour1, i, j, tour2[k])) {
+        if(!find(tour1, begin, end, tour2[k])) {
             new_tour2[k] = tour2[k];
         }
 
-        if(!find(tour2, i, j, tour1[k])) {
+        if(!find(tour2, begin, end, tour1[k])) {
             new_tour1[k] = tour1[k];
         }
     }
 
     for(int k=0; k<size; k++) {
-        if(k>=i && k<j) continue;
+        if(k>=begin && k<end) continue;
 
         if(!find(new_tour1, 0, size, tour2[k])) {
             int l=0;
@@ -92,8 +90,11 @@ double_tour GeneticAlgorithm::PMX(int *tour1, int *tour2, int size, int i, int j
         }
     }
 
-    double_tour dt{new_tour1, new_tour2};
-    return dt;
+    delete [] tour1;
+    delete [] tour2;
+
+    tour1 = new_tour1;
+    tour2 = new_tour2;
 }
 
 int GeneticAlgorithm::tournament_selection(int **tour_array, int tournament_size, int population_size) {
@@ -180,9 +181,10 @@ int GeneticAlgorithm::genetic_algorithm(double stop_time, int mutation_strategy,
     int bestCost = INT32_MAX;
 
     double time_found = 0;
-    int ** tour_array = new int*[population_size];
+    int ** old_gen = new int*[population_size];
+    int ** new_gen = new int*[population_size];
     for(int i=0; i<population_size; i++){
-        tour_array[i] = generate_random_tour(size);
+        old_gen[i] = generate_random_tour(size);
     }
 
     while(counter.getElapsedTime() < stop_time){
@@ -192,19 +194,22 @@ int GeneticAlgorithm::genetic_algorithm(double stop_time, int mutation_strategy,
             while (begin == end) end = rand() % size;
 
             //Generowanie dwóch indexów dróg wybranych przez selekcję turniejową
-            int index1 = tournament_selection(tour_array, tournament_size, population_size);
-            int index2 = tournament_selection(tour_array, tournament_size, population_size);
+            int index1 = tournament_selection(old_gen, tournament_size, population_size);
+            int index2 = tournament_selection(old_gen, tournament_size, population_size);
+
+            int* tour1 = copy(old_gen[index1], size);
+            int* tour2 = copy(old_gen[index2], size);
 
             if (wsp_cros > (rand() / (double) RAND_MAX)) {
                 switch (crossing_strategy) {
                     //PMX
                     case 0: {
-                        auto [f, s] = PMX(tour_array[index1], tour_array[index2], size, begin, end);
+                        PMX(tour1, tour2, begin, end);
                         break;
                     }
                     //OX
                     case 1: {
-                        auto [f, s] = OX(tour_array[index1], tour_array[index2], size, begin, end);
+                        OX(tour1, tour2, begin, end);
                         break;
                     }
                     default:
@@ -215,22 +220,35 @@ int GeneticAlgorithm::genetic_algorithm(double stop_time, int mutation_strategy,
             if (wsp_mut > (rand() / (double) RAND_MAX)) {
                 switch (mutation_strategy) {
                     //Swap
-                    case 0:
+                    case 0: {
+                        swap(tour1, begin, end);
+                        swap(tour2, begin, end);
                         break;
+                    }
                     //Insert
-                    case 1:
+                    case 1: {
+                        insert(tour1, begin, end);
+                        insert(tour2, begin, end);
                         break;
+                    }
                     default:
                         break;
                 }
             }
+
+
         }
     }
 
     for(int i=0; i<population_size; i++){
-        delete [] tour_array[i];
+        delete [] old_gen[i];
     }
-    delete [] tour_array;
+    delete [] old_gen;
+
+    for(int i=0; i<population_size; i++){
+        delete [] new_gen[i];
+    }
+    delete [] new_gen;
 
     return 0;
 }

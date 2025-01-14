@@ -8,15 +8,15 @@ private:
     const int maxStagnation = 1000;
     int** matrix = nullptr;
     int size = 10;
-    int* copy(const int* tour, int size);
-    int calculate_cost(int** matrix, int* tour, int size);
+    static int* copy(const int* tour, int size);
+    static int calculate_cost(int** matrix, int* tour, int size);
     static void swap(int *tour, int i, int j);
     static void insert(int *tour, int i, int j);
     static void inverse(int *tour, int i, int j);
-    int* generate_random_tour(int size);
-    bool find(int *tour, int begin, int end, int value);
-    double_tour PMX(int* tour1, int* tour2, int size, int begin, int end);
-    double_tour OX(int* tour1, int* tour2, int size, int begin, int end);
+    static int* generate_random_tour(int size);
+    static bool find(int *&tour, int begin, int end, int value);
+    void PMX(int* &tour1, int* &tour2, int begin, int end) const;
+    void OX(int* &tour1, int* &tour2, int begin, int end) const;
     int tournament_selection(int** tour_array, int tournament_size, int population_size);
 public:
     void load_matrix(int** matrix, int size);
