@@ -17,7 +17,7 @@ private:
     static bool find(int *&tour, int begin, int end, int value);
     void PMX(int* &tour1, int* &tour2, int begin, int end) const;
     void OX(int* &tour1, int* &tour2, int begin, int end) const;
-    int tournament_selection(int** tour_array, int tournament_size, int population_size);
+    int tournament_selection(int** &tour_array, int tournament_size, int population_size);
 public:
     void load_matrix(int** matrix, int size);
     int genetic_algorithm(double stop_time, int mutation_strategy, int crossing_strategy, int population_size, double wsp_mut, double wsp_cros, int tournament_size=3, double new_gen_intake=0.9);

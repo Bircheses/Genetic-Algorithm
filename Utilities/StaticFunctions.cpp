@@ -5,6 +5,8 @@
 #include <cmath>
 #include <thread>
 
+#include "GeneticAlgorithm.h"
+
 using namespace std;
 
 static int** generate_matrix_asymetric(int size){
@@ -253,7 +255,7 @@ static void read_conf_file () {
             int argument;
             iss >> command >> argument;
 
-            population_size = argument*size;
+            population_size = argument;
         }
 
         if (!line.find("tournament_size:")) {
@@ -344,6 +346,13 @@ static void read_conf_file () {
         }
 
     }
+
+    GeneticAlgorithm GA;
+    GA.load_matrix(matrix, size);
+    int cost = GA.genetic_algorithm(stop_time, mutation, crossing, population_size, wsp_mutation, wsp_crossing, tournament_size, new_gen_intake);
+
+    cout << cost << endl;
+
     delete_matrix(matrix, size);
     file.close();
 }

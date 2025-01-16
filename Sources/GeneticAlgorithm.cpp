@@ -8,6 +8,8 @@
 #include <cmath>
 #include <random>
 
+#include "NearestNeighbourAlgorithm.h"
+
 
 bool GeneticAlgorithm::find(int *&tour, int begin, int end, int value) {
     for(int i=begin; i<end; i++) {
@@ -56,6 +58,11 @@ void GeneticAlgorithm::PMX(int *&tour1, int *&tour2, int begin, int end) const {
     int* new_tour1 = new int[size];
     int* new_tour2 = new int[size];
 
+    for(int k=0; k<size; k++) {
+        new_tour1[k] = -1;
+        new_tour2[k] = -1;
+    }
+
     for(int k=begin; k<end; k++) {
         new_tour1[k] = tour2[k];
         new_tour2[k] = tour1[k];
@@ -85,7 +92,6 @@ void GeneticAlgorithm::PMX(int *&tour1, int *&tour2, int begin, int end) const {
         }
 
         if(!find(new_tour2, 0, size, tour1[k])) {
-            cout << tour1[k] << endl;
             int l=0;
             while(new_tour2[l]!=-1){
                 l++;
@@ -101,7 +107,10 @@ void GeneticAlgorithm::PMX(int *&tour1, int *&tour2, int begin, int end) const {
     tour2 = new_tour2;
 }
 
-int GeneticAlgorithm::tournament_selection(int **tour_array, int tournament_size, int population_size) {
+int GeneticAlgorithm::tournament_selection(int **&tour_array, int tournament_size, int population_size) {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);// CLOCK_MONOTONIC gwarantuje stały wzrost czasu
+    srand(ts.tv_nsec ^ ts.tv_sec);
     int bestCost = INT_MAX, bestIndex=0;
     for(int i=0; i<tournament_size; i++){
         int index = rand() % population_size;
@@ -179,30 +188,26 @@ int GeneticAlgorithm::genetic_algorithm(double stop_time, int mutation_strategy,
     clock_gettime(CLOCK_MONOTONIC, &ts);// CLOCK_MONOTONIC gwarantuje stały wzrost czasu
     srand(ts.tv_nsec ^ ts.tv_sec);
 
+    NearestNeighbourAlgorithm NNA;
+    NNA.load_matrix(matrix, size);
+
     Counter counter;
     counter.start();
 
     int bestCost = INT32_MAX;
+    int* bestTour = new int[size];
 
     double time_found = 0;
     int ** old_gen = new int*[population_size];
     for(int i=0; i<population_size; i++){
-        old_gen[i] = generate_random_tour(size);
+        old_gen[i] = NNA.find_shortest_path();
+        //old_gen[i] = generate_random_tour(size);
     }
 
     int ** new_gen = new int*[population_size];
 
     while(counter.getElapsedTime() < stop_time){
         for(int i=0; i<population_size; i+=2) {
-            int begin = rand() % size;
-            int end = rand() % size;
-            while (begin == end) end = rand() % size;
-
-            if(begin > end) {
-                int temp = end;
-                end = begin;
-                begin = temp;
-            }
 
             //Generating two random parent indexes using tournament selection
             int index1 = tournament_selection(old_gen, tournament_size, population_size);
@@ -213,6 +218,15 @@ int GeneticAlgorithm::genetic_algorithm(double stop_time, int mutation_strategy,
 
             //Crossing strategy with a propability given by user
             if (wsp_cros > (rand() / (double) RAND_MAX)) {
+                int begin = rand() % size;
+                int end = rand() % size;
+                while (begin == end) end = rand() % size;
+
+                if(begin > end) {
+                    int temp = end;
+                    end = begin;
+                    begin = temp;
+                }
                 switch (crossing_strategy) {
                     //PMX
                     case 0: {
@@ -231,6 +245,15 @@ int GeneticAlgorithm::genetic_algorithm(double stop_time, int mutation_strategy,
 
             //Mutation strategy with a propability given by user
             if (wsp_mut > (rand() / (double) RAND_MAX)) {
+                int begin = rand() % size;
+                int end = rand() % size;
+                while (begin == end) end = rand() % size;
+
+                if(begin > end) {
+                    int temp = end;
+                    end = begin;
+                    begin = temp;
+                }
                 switch (mutation_strategy) {
                     //Swap
                     case 0: {
@@ -262,7 +285,10 @@ int GeneticAlgorithm::genetic_algorithm(double stop_time, int mutation_strategy,
         //Save the best cost of old_gen
         int tempCost = calculate_cost(matrix, old_gen[0], size);
         if(tempCost < bestCost) {
+            time_found = counter.getElapsedTime();
             bestCost = tempCost;
+            if(bestTour != nullptr) delete [] bestTour;
+            bestTour = copy(old_gen[0], size);
         }
 
         //Randomly shuffle the new_gen so we take random new_gen_intake of new_gen
@@ -307,7 +333,12 @@ int GeneticAlgorithm::genetic_algorithm(double stop_time, int mutation_strategy,
     delete [] old_gen;
     delete [] new_gen;
 
-    return 0;
+    show_tour(bestTour, size);
+    cout << time_found << "ms" << endl;
+
+    delete [] bestTour;
+
+    return bestCost;
 }
 
 void GeneticAlgorithm::load_matrix(int **matrix, int size) {

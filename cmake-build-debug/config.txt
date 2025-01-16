@@ -2,21 +2,21 @@
 nazwa_pliku: ftv47.atsp
 
 # kryterium stopu (czas_stopu - czas dla którego algorytm się zatrzyma w sekundach)
-czas_stopu: 10
+czas_stopu: 60
 
 # Wybór krzyżowania (crossing - PMX lub OX; wsp_crossing - liczba zmiennoprzecinkowa od 0 do 1 (default=0.8))
-crossing: PMX; 0.8
+crossing: OX; 0.8
 
 # Wybór mutacji (mutation - swap lub insert; wsp_mutatation - liczba zmiennoprzecinkowa od 0 do 1 (default=0.1))
-mutation: swap; 0.1
+mutation: insert; 0.1
 
-# Wielkość populacji (population - wielkość populacji (przemnożona przez wielkość problemu np.: dla ftv47.atsp, wielkość 10 będzie równa 10*48=480))
-population: 10
+# Wielkość populacji (population - wielkość populacji)
+population: 32
 
 # Wielkość turnieju (tournament_size - liczba od 0 do 4 (default=3))
 tournament_size: 3
 
-# Procent najlepszych osobników ze starej generacji w nowej generacji (old_best_gen_intake - liczba liczba zmiennoprzecinkowa od 0 do 1 (defualt=0.1))
+# Procent najlepszych osobników ze starej generacji w nowej generacji (old_best_gen_intake - liczba liczba zmiennoprzecinkowa od 0 do 1 (default=0.1))
 old_best_gen_intake: 0.1
 
 # Poniższa linijka kodu została użyta do symulacji algorytmu dla wszystkich parametrów
