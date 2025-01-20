@@ -159,25 +159,38 @@ static pair<int, int**> read_from_file (string path) {
     return std::make_pair(amount, matrix);
 }
 
-/*static void write_csv_file(double alpha, int strategy, return_values rv, int size) {
+static void write_csv_file(double wsp_crossing, double wsp_mutation, int cross_strat, int mutate_strat,  return_values rv, int size) {
     ofstream file("results.csv", std::ios::app);
-    string strat = "";
+    string cross_strat_string = "";
+    string mutate_strat_string = "";
 
-    if(strategy == 0) strat = "swap";
-    else if(strategy == 1) strat = "inverse";
-    else if(strategy == 2) strat = "insert";
+    if(cross_strat == 0) cross_strat_string = "PMX";
+    else if(cross_strat == 1) cross_strat_string = "0X";
 
-    file << rv.cost << ";" << rv.final_temp << ";" << rv.time << ";" << strat << ";" << alpha << ";";
+    if(mutate_strat == 0) mutate_strat_string = "swap";
+    else if(mutate_strat == 1) mutate_strat_string = "insert";
+
+    file << rv.cost << ";" << rv.time << ";" << cross_strat_string << ";" << wsp_crossing << ";" << mutate_strat_string << ";" << wsp_mutation << ";";
 
     for(int i=0; i<size; i++) {
         file << rv.tour[i] << " ";
     }
 
     file << endl;
-}*/
+}
 
-static void start_thread() {
+static void start_thread(int** matrix, int size, int cross_strat, int mutate_strat, int population, double stop_time, double wsp_crossing, double wsp_mutation) {
+    return_values rv;
 
+    GeneticAlgorithm GA;
+
+    GA.load_matrix(matrix, size);
+
+    rv = GA.genetic_algorithm(stop_time, mutate_strat, cross_strat, population, wsp_mutation, wsp_crossing);
+
+    write_csv_file(wsp_crossing, wsp_mutation, cross_strat, mutate_strat, rv, size);
+
+    delete[] rv.tour;
 }
 
 static void read_conf_file () {
@@ -292,10 +305,15 @@ static void read_conf_file () {
         }
 
         if (!line.find("Simulate")) {
-            int algorithm = 1;
+            ofstream file("results.csv", std::ios::app);
+
+            int algorithm = 0;
+            int mutations[2] = {0, 1};
+            int crossings[2] = {0, 1};
             double stop_times[3] = {60000, 120000, 240000};
-            double alphas[3] = {0.95, 0.975, 0.995};
-            double min_temp = std::numeric_limits<double>::denorm_min();
+            double wsp_cross[3] = {0.5, 0.7, 0.9};
+            double wsp_mutate[3] = {0.01, 0.05, 0.1};
+            double population[3] = {48};
 
             int** matrix;
             int size;
@@ -314,32 +332,35 @@ static void read_conf_file () {
                 size = f1;
             }
 
-            for(int k=1; k<2; k++) {
-                for(int i=0; i<3; i++) {
+            for(int k=0; k<1; k++) {
+                file << "Populacja:" << population[k] << endl;
+                for(int i=0; i<2; i++) {
                     for(int j=0; j<2; j++) {
-                        /*thread t1(start_thread, matrix, size, k, alphas[i], stop_times[algorithm], min_temp);
+                        for(int l=0; l<2; l++) {
+                            thread t1(start_thread, matrix, size, crossings[i], mutations[j], population[k], stop_times[algorithm], 0.8, 0.01);
 
-                        this_thread::sleep_for(std::chrono::milliseconds(200));
+                            this_thread::sleep_for(std::chrono::milliseconds(200));
 
-                        thread t2(start_thread, matrix, size, k, alphas[i], stop_times[algorithm], min_temp);
+                            thread t2(start_thread, matrix, size, crossings[i], mutations[j], population[k], stop_times[algorithm], 0.8, 0.01);
 
-                        this_thread::sleep_for(std::chrono::milliseconds(200));
+                            this_thread::sleep_for(std::chrono::milliseconds(200));
 
-                        thread t3(start_thread, matrix, size, k, alphas[i], stop_times[algorithm], min_temp);
+                            thread t3(start_thread, matrix, size, crossings[i], mutations[j], population[k], stop_times[algorithm], 0.8, 0.01);
 
-                        this_thread::sleep_for(std::chrono::milliseconds(200));
+                            this_thread::sleep_for(std::chrono::milliseconds(200));
 
-                        thread t4(start_thread, matrix, size, k, alphas[i], stop_times[algorithm], min_temp);
+                            thread t4(start_thread, matrix, size, crossings[i], mutations[j], population[k], stop_times[algorithm], 0.8, 0.01);
 
-                        this_thread::sleep_for(std::chrono::milliseconds(200));
+                            this_thread::sleep_for(std::chrono::milliseconds(200));
 
-                        thread t5(start_thread, matrix, size, k, alphas[i], stop_times[algorithm], min_temp);
+                            thread t5(start_thread, matrix, size, crossings[i], mutations[j], population[k], stop_times[algorithm], 0.8, 0.01);
 
-                        t1.join();
-                        t2.join();
-                        t3.join();
-                        t4.join();
-                        t5.join();*/
+                            t1.join();
+                            t2.join();
+                            t3.join();
+                            t4.join();
+                            t5.join();
+                        }
                     }
                 }
             }
@@ -347,11 +368,11 @@ static void read_conf_file () {
 
     }
 
-    GeneticAlgorithm GA;
+    /*GeneticAlgorithm GA;
     GA.load_matrix(matrix, size);
     int cost = GA.genetic_algorithm(stop_time, mutation, crossing, population_size, wsp_mutation, wsp_crossing, tournament_size, new_gen_intake);
 
-    cout << cost << endl;
+    cout << cost << endl;*/
 
     delete_matrix(matrix, size);
     file.close();

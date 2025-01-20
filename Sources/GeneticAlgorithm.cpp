@@ -183,7 +183,7 @@ int * GeneticAlgorithm::generate_random_tour(int size) {
     return a;
 }
 
-int GeneticAlgorithm::genetic_algorithm(double stop_time, int mutation_strategy, int crossing_strategy, int population_size, double wsp_mut, double wsp_cros, int tournament_size, double new_gen_intake) {
+return_values GeneticAlgorithm::genetic_algorithm(double stop_time, int mutation_strategy, int crossing_strategy, int population_size, double wsp_mut, double wsp_cros, int tournament_size, double new_gen_intake) {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);// CLOCK_MONOTONIC gwarantuje stały wzrost czasu
     srand(ts.tv_nsec ^ ts.tv_sec);
@@ -333,12 +333,11 @@ int GeneticAlgorithm::genetic_algorithm(double stop_time, int mutation_strategy,
     delete [] old_gen;
     delete [] new_gen;
 
-    show_tour(bestTour, size);
-    cout << time_found << "ms" << endl;
+    return_values rv = {bestCost, bestTour, time_found};
 
-    delete [] bestTour;
+    counter.stop();
 
-    return bestCost;
+    return rv;
 }
 
 void GeneticAlgorithm::load_matrix(int **matrix, int size) {

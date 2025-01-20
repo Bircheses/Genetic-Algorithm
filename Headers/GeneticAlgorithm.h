@@ -20,7 +20,7 @@ private:
     int tournament_selection(int** &tour_array, int tournament_size, int population_size);
 public:
     void load_matrix(int** matrix, int size);
-    int genetic_algorithm(double stop_time, int mutation_strategy, int crossing_strategy, int population_size, double wsp_mut, double wsp_cros, int tournament_size=3, double new_gen_intake=0.9);
+    return_values genetic_algorithm(double stop_time, int mutation_strategy, int crossing_strategy, int population_size, double wsp_mut, double wsp_cros, int tournament_size=3, double new_gen_intake=0.9);
     ~GeneticAlgorithm();
 };
 
