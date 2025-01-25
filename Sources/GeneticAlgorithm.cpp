@@ -20,6 +20,13 @@ bool GeneticAlgorithm::find(int *&tour, int begin, int end, int value) {
     return false;
 }
 
+int GeneticAlgorithm::find_index(const int* arr, int begin, int end, int value){
+    for (int i = begin; i < end; i++) {
+        if (arr[i] == value) return i;
+    }
+    return -1;
+}
+
 void GeneticAlgorithm::OX(int *&tour1, int *&tour2, int begin, int end) const {
     int* new_tour1 = new int[size];
     int* new_tour2 = new int[size];
@@ -68,36 +75,22 @@ void GeneticAlgorithm::PMX(int *&tour1, int *&tour2, int begin, int end) const {
         new_tour2[k] = tour1[k];
     }
 
-    for(int k=0; k<size; k++) {
-        if(k>=begin && k<end) continue;
+    for (int k = 0; k < size; k++) {
+        if (k >= begin && k < end) continue;
 
-        if(!find(tour1, begin, end, tour2[k])) {
-            new_tour2[k] = tour2[k];
+        int value = tour1[k];
+        while (find(new_tour1, begin, end, value)) {
+            int pos = find_index(tour2, begin, end, value);
+            value = tour1[pos];
         }
+        new_tour1[k] = value;
 
-        if(!find(tour2, begin, end, tour1[k])) {
-            new_tour1[k] = tour1[k];
+        value = tour2[k];
+        while (find(new_tour2, begin, end, value)) {
+            int pos = find_index(tour1, begin, end, value);
+            value = tour2[pos];
         }
-    }
-
-    for(int k=0; k<size; k++) {
-        if(k>=begin && k<end) continue;
-
-        if(!find(new_tour1, 0, size, tour2[k])) {
-            int l=0;
-            while(new_tour1[l]!=-1){
-                l++;
-            }
-            new_tour1[l]=tour2[k];
-        }
-
-        if(!find(new_tour2, 0, size, tour1[k])) {
-            int l=0;
-            while(new_tour2[l]!=-1){
-                l++;
-            }
-            new_tour2[l] = tour1[k];
-        }
+        new_tour2[k] = value;
     }
 
     delete [] tour1;

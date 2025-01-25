@@ -313,7 +313,7 @@ static void read_conf_file () {
             double stop_times[3] = {60000, 120000, 240000};
             double wsp_cross[3] = {0.5, 0.7, 0.9};
             double wsp_mutate[3] = {0.01, 0.05, 0.1};
-            double population[3] = {48};
+            double population[3] = {16, 57, 134};
 
             int** matrix;
             int size;
@@ -332,34 +332,45 @@ static void read_conf_file () {
                 size = f1;
             }
 
-            for(int k=0; k<1; k++) {
-                file << "Populacja:" << population[k] << endl;
-                for(int i=0; i<2; i++) {
-                    for(int j=0; j<2; j++) {
-                        for(int l=0; l<2; l++) {
-                            thread t1(start_thread, matrix, size, crossings[i], mutations[j], population[k], stop_times[algorithm], 0.8, 0.01);
+            //Wybór krzyżowania
+            for (int & crossing1 : crossings) {
+                //Wybór mutacji
+                for (int & mutation1 : mutations) {
+                    //Wybór wsp krzyżowania
+                    for(double & wsp_cros : wsp_cross) {
+                        //Wybór wsp mutacji
+                        for(double & m : wsp_mutate) {
+                            //2 iteracje po 5 threadów = 10 wyników
+                            for (int l = 0; l < 2; l++) {
+                                thread t1(start_thread, matrix, size, crossing1, mutation1, population[algorithm],
+                                          stop_times[algorithm], wsp_cros, m);
 
-                            this_thread::sleep_for(std::chrono::milliseconds(200));
+                                this_thread::sleep_for(std::chrono::milliseconds(200));
 
-                            thread t2(start_thread, matrix, size, crossings[i], mutations[j], population[k], stop_times[algorithm], 0.8, 0.01);
+                                thread t2(start_thread, matrix, size, crossing1, mutation1, population[algorithm],
+                                          stop_times[algorithm], wsp_cros, m);
 
-                            this_thread::sleep_for(std::chrono::milliseconds(200));
+                                this_thread::sleep_for(std::chrono::milliseconds(200));
 
-                            thread t3(start_thread, matrix, size, crossings[i], mutations[j], population[k], stop_times[algorithm], 0.8, 0.01);
+                                thread t3(start_thread, matrix, size, crossing1, mutation1, population[algorithm],
+                                          stop_times[algorithm], wsp_cros, m);
 
-                            this_thread::sleep_for(std::chrono::milliseconds(200));
+                                this_thread::sleep_for(std::chrono::milliseconds(200));
 
-                            thread t4(start_thread, matrix, size, crossings[i], mutations[j], population[k], stop_times[algorithm], 0.8, 0.01);
+                                thread t4(start_thread, matrix, size, crossing1, mutation1, population[algorithm],
+                                          stop_times[algorithm], wsp_cros, m);
 
-                            this_thread::sleep_for(std::chrono::milliseconds(200));
+                                this_thread::sleep_for(std::chrono::milliseconds(200));
 
-                            thread t5(start_thread, matrix, size, crossings[i], mutations[j], population[k], stop_times[algorithm], 0.8, 0.01);
+                                thread t5(start_thread, matrix, size, crossing1, mutation1, population[algorithm],
+                                          stop_times[algorithm], wsp_cros, m);
 
-                            t1.join();
-                            t2.join();
-                            t3.join();
-                            t4.join();
-                            t5.join();
+                                t1.join();
+                                t2.join();
+                                t3.join();
+                                t4.join();
+                                t5.join();
+                            }
                         }
                     }
                 }
